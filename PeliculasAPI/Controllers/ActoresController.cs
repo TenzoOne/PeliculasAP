@@ -17,43 +17,45 @@ namespace PeliculasAPI.Controllers
 {
     [ApiController]
     [Route("api/actores")]
-    public class ActoresController : ControllerBase
+    public class ActoresController : CustomBaseController
     {
         private readonly ApplicationDBContext _context;
         private readonly IMapper _mapper;
         private readonly IAlmacenadorArchivos almacenadorArchivos;
         private readonly string contenedor = "actores";
 
-        public ActoresController(ApplicationDBContext context, IMapper mapper, IAlmacenadorArchivos almacenadorArchivos)
+        public ActoresController(ApplicationDBContext context, IMapper mapper, IAlmacenadorArchivos almacenadorArchivos):base(context,mapper)
         {
             this._context = context;
             this._mapper = mapper;
             this.almacenadorArchivos = almacenadorArchivos;
         }
 
-
         [HttpGet]
         public async Task<ActionResult<List<ActorDTO>>> Get([FromQuery] PaginacionDTO paginacionDTO)  // parametro para paginacion/
         {
 
-            var queryable = _context.Actores.AsQueryable();
-            await HttpContext.InsertarParametrosPaginacion(queryable,paginacionDTO.CantidadRegistrosPorPagina);
 
-            var actores = await queryable.Paginar(paginacionDTO).ToListAsync(); //debe implementarse paginacion
-            return _mapper.Map<List<ActorDTO>>(actores);
+            return await Get<Actor, ActorDTO>(paginacionDTO);
+            //var queryable = _context.Actores.AsQueryable();
+            //await HttpContext.InsertarParametrosPaginacion(queryable,paginacionDTO.CantidadRegistrosPorPagina);
+            //var actores = await queryable.Paginar(paginacionDTO).ToListAsync(); //debe implementarse paginacion
+            //return _mapper.Map<List<ActorDTO>>(actores);
         }
 
         [HttpGet("{id}", Name = "obtenerActor")]
         public async Task<ActionResult<ActorDTO>> Get(int id)
         {
-            var entidad = await this._context.Actores.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (entidad == null)
-            {
-                NotFound();
-            }
+            return await Get<Actor,ActorDTO>(id);
+            //var entidad = await this._context.Actores.FirstOrDefaultAsync(x => x.Id == id);
 
-            return _mapper.Map<ActorDTO>(entidad);
+            //if (entidad == null)
+            //{
+            //    NotFound();
+            //}
+
+            //return _mapper.Map<ActorDTO>(entidad);
         }
 
         [HttpPost]
@@ -83,84 +85,90 @@ namespace PeliculasAPI.Controllers
         [HttpPatch("{id}")]
         public async Task<ActionResult> Patch(int id, [FromBody] JsonPatchDocument<ActorPatchDTO> patchDocument)
         {
-            if (patchDocument is null)
-            {
-                return BadRequest();
-            }
+
+            return await Patch<Actor, ActorPatchDTO>(id,patchDocument);
+            //if (patchDocument is null)
+            //{
+            //    return BadRequest();
+            //}
 
 
-            var entidaDB = await _context.Actores.FirstOrDefaultAsync(x => x.Id == id);
+            //var entidaDB = await _context.Actores.FirstOrDefaultAsync(x => x.Id == id);
 
-            if (entidaDB is null)
-            {
-                return NotFound();
-            }
+            //if (entidaDB is null)
+            //{
+            //    return NotFound();
+            //}
 
-            var entidadDTO = _mapper.Map<ActorPatchDTO>(entidaDB);
+            //var entidadDTO = _mapper.Map<ActorPatchDTO>(entidaDB);
 
-            patchDocument.ApplyTo(entidadDTO, ModelState);
+            //patchDocument.ApplyTo(entidadDTO, ModelState);
 
-            var esvalido = TryValidateModel(entidadDTO);
+            //var esvalido = TryValidateModel(entidadDTO);
 
-            if (!esvalido)
-            {
-                return BadRequest(ModelState);
-            }
+            //if (!esvalido)
+            //{
+            //    return BadRequest(ModelState);
+            //}
 
-            _mapper.Map(entidadDTO, entidaDB);
+            //_mapper.Map(entidadDTO, entidaDB);
 
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
 
-            return NoContent();
+            //return NoContent();
         }
 
 
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, [FromForm] ActorCreacionDTO actorCreacion)
         {
+
+            return  await Put<ActorCreacionDTO,Actor>(id, actorCreacion);
             //solo se actualiza lo necesario
-            var actorDB = await _context.Actores.FirstOrDefaultAsync(x => x.Id == id);
+            //var actorDB = await _context.Actores.FirstOrDefaultAsync(x => x.Id == id);
 
 
-            if (actorDB == null)
-            {
-                return NotFound();
-            }
+            //if (actorDB == null)
+            //{
+            //    return NotFound();
+            //}
 
-            actorDB = _mapper.Map(actorCreacion,actorDB);
+            //actorDB = _mapper.Map(actorCreacion,actorDB);
 
-            if (actorCreacion.Foto != null)
-            {
-                using (var memoryString = new MemoryStream())
-                {
-                    await actorCreacion.Foto.CopyToAsync(memoryString);
-                    var contenido = memoryString.ToArray();
-                    var extension = Path.GetExtension(actorCreacion.Foto.FileName);
+            //if (actorCreacion.Foto != null)
+            //{
+            //    using (var memoryString = new MemoryStream())
+            //    {
+            //        await actorCreacion.Foto.CopyToAsync(memoryString);
+            //        var contenido = memoryString.ToArray();
+            //        var extension = Path.GetExtension(actorCreacion.Foto.FileName);
 
-                    actorDB.Foto = await almacenadorArchivos.EditarArchivo(contenido, extension, contenedor,actorDB.Foto, actorCreacion.Foto.ContentType);
-                }
-            }
+            //        actorDB.Foto = await almacenadorArchivos.EditarArchivo(contenido, extension, contenedor,actorDB.Foto, actorCreacion.Foto.ContentType);
+            //    }
+            //}
 
-            await _context.SaveChangesAsync();
+            //await _context.SaveChangesAsync();
 
-            return NoContent();
+            //return NoContent();
         }
 
 
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
-            var entidad = await _context.Actores.AnyAsync(x => x.Id == id);
 
-            if (!entidad)
-            {
-                return NotFound();
-            }
+            return await Delete<Actor>(id);
+            //var entidad = await _context.Actores.AnyAsync(x => x.Id == id);
 
-            _context.Remove( new Actor {Id = id });
+            //if (!entidad)
+            //{
+            //    return NotFound();
+            //}
 
-            await _context.SaveChangesAsync();
-            return NoContent();
+            //_context.Remove( new Actor {Id = id });
+
+            //await _context.SaveChangesAsync();
+            //return NoContent();
         }
 
 
