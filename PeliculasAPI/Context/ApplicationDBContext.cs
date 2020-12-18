@@ -1,13 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
 using PeliculasAPI.Entidades;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PeliculasAPI.Context
 {
-    public class ApplicationDBContext : DbContext
+    public class ApplicationDBContext : IdentityDbContext
     {
         public ApplicationDBContext(DbContextOptions options) : base(options)
         {
@@ -24,7 +26,7 @@ namespace PeliculasAPI.Context
                 .HasKey(x => new { x.GeneroId, x.PeliculaId });
 
             modelBuilder.Entity<PeliculasSalasDeCine>()
-                .HasKey(x => new {x.PeliculaId,x.SalaDeCineId });
+                .HasKey(x => new { x.PeliculaId, x.SalaDeCineId });
 
             SeedData(modelBuilder);
 
@@ -33,6 +35,59 @@ namespace PeliculasAPI.Context
 
         private void SeedData(ModelBuilder modelBuilder)
         {
+
+
+            //se agregan datos para autenticacion
+            var rolAdminId = "6b305f9c-082f-4726-bd44-6a6ff7b9d87c";
+            var usuarioAdminId = "9054a0ae-a09b-4dd5-86f2-f93533a4dc2b";
+
+            var rolAdmin = new IdentityRole()
+            {
+                Id = rolAdminId,
+                Name = "Admin",
+                NormalizedName = "Admin"
+            };
+
+            var passwordHasher = new PasswordHasher<IdentityUser>();
+
+            var username = "char@hotmail.com";
+            var usuarioAdmin = new IdentityUser()
+            {
+                Id = rolAdminId,
+                UserName = username,
+                NormalizedUserName = username,
+                Email = username,
+                NormalizedEmail = username,
+                PasswordHash = passwordHasher.HashPassword(null, "123456")
+            };
+
+            //modelbuilder.entity<identityuser>()
+            //    .hasdata(usuarioadmin);
+
+            //modelbuilder.entity<identityrole>()
+            //    .hasdata(roladmin);
+
+            //modelbuilder.entity<identityuserclaim<string>>()
+            //    .hasdata(new identityuserclaim<string>()
+            //    {
+            //        id = 1,
+            //        claimtype = claimtypes.role,
+            //        userid = usuarioAdminId,
+            //        claimvalue = "admin"
+            //    });
+
+
+
+            var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
+
+            modelBuilder.Entity<SalaDeCine>()
+                .HasData(new List<SalaDeCine>
+                {
+                    new SalaDeCine{Id=3,Nombre = "Sambil",Ubicacion = geometryFactory.CreatePoint(new Coordinate(-69.9118804,18.4826214)) },
+                    new SalaDeCine{Id=4,Nombre = "Megacentro",Ubicacion = geometryFactory.CreatePoint(new Coordinate(-69.856427, 18.506934)) },
+                    new SalaDeCine{Id=5,Nombre = "Village",Ubicacion = geometryFactory.CreatePoint(new Coordinate(-73.986227, 40.730898)) },
+                });
+
             var aventura = new Genero() { Id = 4, Nombre = "Aventura" };
             var animation = new Genero() { Id = 5, Nombre = "Animación" };
             var suspenso = new Genero() { Id = 6, Nombre = "Suspenso" };

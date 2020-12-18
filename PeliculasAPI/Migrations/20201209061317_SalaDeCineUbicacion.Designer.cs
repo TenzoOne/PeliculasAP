@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetTopologySuite.Geometries;
 using PeliculasAPI.Context;
@@ -10,9 +11,10 @@ using PeliculasAPI.Context;
 namespace PeliculasAPI.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20201209061317_SalaDeCineUbicacion")]
+    partial class SalaDeCineUbicacion
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -318,26 +320,6 @@ namespace PeliculasAPI.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("SalasDeCine");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 4,
-                            Nombre = "Sambil",
-                            Ubicacion = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-69.9118804 18.4826214)")
-                        },
-                        new
-                        {
-                            Id = 5,
-                            Nombre = "Megacentro",
-                            Ubicacion = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-69.856427 18.506934)")
-                        },
-                        new
-                        {
-                            Id = 6,
-                            Nombre = "Village",
-                            Ubicacion = (NetTopologySuite.Geometries.Point)new NetTopologySuite.IO.WKTReader().Read("SRID=4326;POINT (-73.986227 40.730898)")
-                        });
                 });
 
             modelBuilder.Entity("PeliculasAPI.Entidades.PeliculasActores", b =>
